@@ -27,6 +27,8 @@ jobs:
           test "$GITHUB_REF_TYPE" = tag
           test "$GITHUB_REF_NAME" = "v$(node -p "require('./package.json').version")"
       - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
       - uses: actions/setup-node@v6
         with:
           node-version: 24
