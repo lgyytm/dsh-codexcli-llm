@@ -1,0 +1,131 @@
+.root {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.row {
+  position: relative;
+  overflow: hidden;
+}
+
+.root[data-status='item-started'] .row::after,
+.root[data-status='item-delta'] .row::after,
+.root[data-status='approval-requested'] .row::after,
+.root[data-status='approval-decided'] .row::after {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 300px;
+  animation: codex-observation-sweep 2.6s ease-out infinite;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--dsw-alias-bg-base) 60%, transparent) 55%,
+    transparent 100%
+  );
+  content: '';
+  pointer-events: none;
+}
+
+@keyframes codex-observation-sweep {
+  0% { left: -300px; }
+  90%, 100% { left: 100%; }
+}
+
+.leading {
+  flex-shrink: 0;
+}
+
+.chevron {
+  color: var(--dsw-alias-label-secondary);
+}
+
+.title {
+  font-weight: 400;
+}
+
+.separator {
+  flex: none;
+  width: 2px;
+  height: 2px;
+  margin: 0 8px;
+  border-radius: 1px;
+  background: var(--dsw-alias-label-caption);
+}
+
+.summary,
+.errorSummary {
+  overflow: hidden;
+  min-width: 0;
+  flex: 1 1 auto;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 14px;
+  line-height: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.errorSummary {
+  color: var(--dsw-alias-state-error-primary);
+}
+
+.summary[data-follow-end] {
+  text-overflow: clip;
+}
+
+.status {
+  flex: none;
+  margin-left: 8px;
+  color: var(--dsw-alias-label-caption);
+  font-size: 12px;
+  line-height: 24px;
+}
+
+.reasoningBody {
+  padding: 4px 0 4px 22px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 14px;
+  line-height: 24px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.toolBody {
+  display: grid;
+  gap: 8px;
+  max-height: 360px;
+  margin: 4px 0 4px 22px;
+  overflow: auto;
+}
+
+.details {
+  display: grid;
+  gap: 6px;
+}
+
+.resultLabel {
+  color: var(--dsw-alias-label-caption);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.error {
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-error);
+  font: var(--dsw-font-markdown-code);
+  white-space: pre-wrap;
+}
+
+.empty {
+  font-style: italic;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root .row::after {
+    animation: none;
+  }
+}
