@@ -1,1 +1,11 @@
 minimumReleaseAge: 0
+
+# pnpm 11 denies dependency lifecycle scripts unless each package is reviewed.
+# The Codex bridge needs native PTY and FFI bindings; the remaining scripts are
+# not required by the bundle and stay disabled.
+allowBuilds:
+  '@deepseek-ai/dsh-subprocess-local@0.1.0-rc.7': true
+  '@google/genai': false
+  koffi: true
+  node-pty: true
+  protobufjs: false
