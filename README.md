@@ -1,5 +1,7 @@
 # dsh-codex
 
+English | [中文](README.zh.md)
+
 Local [Codex CLI](https://developers.openai.com/codex/cli/) integration for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness).
 
 It installs as one DSH bundle. Selecting Codex in the model picker starts a local `codex app-server --stdio` process for the session, preserves its Codex thread across turns, routes eligible approvals through DSH, and renders Codex reasoning, tool activity, usage, and generated images in the standard Web conversation.
