@@ -37,6 +37,12 @@ function appendText(previous: unknown, addition: unknown): unknown {
     : addition
 }
 
+/** Remove Codex summary lines' transport-only Markdown bold delimiters for plain-text Think rendering. */
+function displayReasoning(value: string, kind: CodexTurnItemData['reasoningKind']): string {
+  if (kind !== 'summary') return value
+  return value.replaceAll('**', '')
+}
+
 function updateState(
   state: CodexObservationData,
   next: CodexTurnItemData,
@@ -49,9 +55,9 @@ function updateState(
     ...next.reasoning === undefined
       ? {}
       : {
-        reasoning: delta && state.reasoningKind === next.reasoningKind
+        reasoning: displayReasoning(delta && state.reasoningKind === next.reasoningKind
           ? String(appendText(state.reasoning ?? '', next.reasoning))
-          : next.reasoning,
+          : next.reasoning, next.reasoningKind),
         ...next.reasoningKind === undefined ? {} : { reasoningKind: next.reasoningKind },
       },
     ...next.toolResult === undefined

@@ -32,6 +32,8 @@ export interface CodexSessionConnection {
   readonly processFailure: Promise<never>
   /** The child handle, for diagnostics. */
   readonly child: SubprocessHandle
+  /** Interrupt the currently active Codex turn; idempotent for this connection. */
+  readonly requestCancel: () => void
   /** Abort the connection; idempotent. */
   readonly dispose: () => Promise<void>
   /** The persistent thread id, once created. */
@@ -106,6 +108,7 @@ export async function startCodexSession(
       wire,
       processFailure: started.processFailure,
       child: started.child,
+      requestCancel: started.requestCancel,
       dispose: started.dispose,
       threadId: wire.thread(),
     }
@@ -139,12 +142,30 @@ export async function runCodexSessionTurn(
   reasoningSummary: CodexReasoningSummary,
   model?: string,
 ): Promise<CodexTurnResult> {
-  const completed = await Promise.race([
-    connection.wire.runTurn([text], signal, reasoningSummary, model),
-    connection.processFailure,
-  ])
-  if (completed.stopReason === 'max-tokens') {
-    throw new Error('llm-codex: Codex context window exceeded')
+  const onAbort = (): void => { connection.requestCancel() }
+  if (signal.aborted) onAbort()
+  else signal.addEventListener('abort', onAbort, { once: true })
+  try {
+    const completed = await Promise.race([
+      connection.wire.runTurn([text], signal, reasoningSummary, model),
+      connection.processFailure,
+    ])
+    if (completed.stopReason === 'max-tokens') {
+      throw new Error('llm-codex: Codex context window exceeded')
+    }
+    return completed
+  } catch (error: unknown) {
+    if (!signal.aborted) throw error
+    try {
+      await connection.dispose()
+    } catch (disposeError: unknown) {
+      throw new AggregateError(
+        [thrown(error), thrown(disposeError)],
+        'llm-codex: turn cancellation failed to clean up the app-server child',
+      )
+    }
+    throw error
+  } finally {
+    signal.removeEventListener('abort', onAbort)
   }
-  return completed
 }

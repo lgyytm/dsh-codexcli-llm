@@ -79,7 +79,7 @@ export interface StartedCodexChild {
   readonly processFailure: Promise<never>
   /** Local cancellation controller; aborting it interrupts the remote turn. */
   readonly runAbort: AbortController
-  /** Request cancellation for the parent signal; idempotent. */
+  /** Request cancellation for the active turn; idempotent for this child. */
   readonly requestCancel: () => void
   /** Dispose the child to whole-tree quiescence. */
   readonly dispose: () => Promise<void>
@@ -89,7 +89,7 @@ export interface StartedCodexChild {
  * Spawn the fixed `codex app-server --stdio` child, wire its stdio, and set up
  * the process-failure and local-cancellation race the seams share.
  * @param spec - child spawn facts.
- * @param signal - parent cancellation; aborting it interrupts the child.
+ * @param signal - startup cancellation consumed by the caller's wire operations.
  * @param label - seam name for diagnostics.
  * @param onItem - per-completed-item event sink (forwarded to the wire).
  * @param resolveApproval - approval handler (forwarded to the wire).
@@ -97,7 +97,7 @@ export interface StartedCodexChild {
  */
 export function startCodexChild(
   spec: CodexChildSpec,
-  signal: AbortSignal,
+  _signal: AbortSignal,
   label: string,
   onItem?: (item: CodexItemEvent) => void,
   resolveApproval?: CodexApprovalHandler,
@@ -134,9 +134,6 @@ export function startCodexChild(
     runAbort.abort(new Error(`${label}: run cancelled locally`))
     wire.interrupt()
   }
-  const onAbort = (): void => { requestCancel() }
-  signal.addEventListener('abort', onAbort, { once: true })
-
   return {
     wire,
     child,
@@ -144,7 +141,6 @@ export function startCodexChild(
     runAbort,
     requestCancel,
     dispose: async () => {
-      signal.removeEventListener('abort', onAbort)
       await disposeCodexChild(wire, child)
     },
   }

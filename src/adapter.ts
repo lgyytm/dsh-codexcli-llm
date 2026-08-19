@@ -353,6 +353,9 @@ export class CodexLlmAdapter extends LlmAdapter {
       yield { type: 'finish', reason: { kind: 'stop' } }
     } catch (error: unknown) {
       if (signal.aborted) {
+        if (this.connections.get(sessionId) === state) {
+          this.connections.delete(sessionId)
+        }
         yield {
           type: 'finish',
           reason: {

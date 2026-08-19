@@ -44,7 +44,7 @@
     "build": "tsdown",
     "prepare": "npm run build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test test/*.test.mjs"
+    "test": "node --test test/*.test.mjs && vitest run test/*.test.ts"
   },
   "dsh": {
     "bundle": {
